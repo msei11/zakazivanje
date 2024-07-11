@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Bot</title>
+    <style>
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Postavi elemente na vrh ekrana */
+            height: 100vh;
+            margin: 0;
+            padding: 20px; /* Dodato da se pozadina vidi oko chata */
+            box-sizing: border-box;
+        }
+        #chat-container {
+            width: 100%;
+            height: 80%;
+            max-width: 800px; /* Povećana maksimalna širina */
+            background-color: #34495e;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+        #chat-box {
+            flex: 1;
+            height: 600px; /* Povećana visina */
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: scroll;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .message {
+            margin: 10% 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 20px; /* Povećana veličina fonta */
+        }
+        .user {
+            background-color: #3498db;
+            color: #ecf0f1;
+            align-self: flex-end;
+            text-align: right;
+        }
+        .bot {
+            background-color: #2ecc71;
+            color: #ecf0f1;
+            align-self: flex-start;
+            text-align: left;
+        }
+        #input-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        #user-input {
+            width: calc(100% - 120px);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 18px; /* Povećana veličina fonta */
+        }
+        button {
+            background-color: #3498db;
+            color: #ecf0f1;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 18px; /* Povećana veličina fonta */
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        @media (max-width: 600px) {
+            #chat-container {
+                max-width: 100%;
+                padding: 10px;
+            }
+            #chat-box {
+                height: 400px; /* Smanjena visina za mobilne uređaje */
+            }
+            .message {
+                font-size: 16px; /* Prilagođena veličina fonta za mobilne uređaje */
+            }
+            #user-input {
+                font-size: 16px; /* Prilagođena veličina fonta za mobilne uređaje */
+            }
+            button {
+                font-size: 16px; /* Prilagođena veličina fonta za mobilne uređaje */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h1 style="text-align: center;">Chat Bot</h1>
+        <div id="chat-box"></div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="Unesite poruku..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Pošalji</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            addMessage('bot', 'Dobrodošli u naš chat! Kako vam mogu pomoći?');
+        });
+
+        function addMessage(sender, message) {
+            const chatBox = document.getElementById('chat-box');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+            messageDiv.textContent = message;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const message = userInput.value.trim().toLowerCase();
+            if (message === '') return;
+
+            userInput.value = '';
+
+            addMessage('user', 'Korisnik: ' + message);
+
+            fetch('/handle_command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    addMessage('bot', 'Bot: ' + data.response);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
+
+

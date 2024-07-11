@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promena Termina</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #change-appointment-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #333;
+        }
+        input[type="date"],
+        input[type="time"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="submit"], button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input[type="submit"] {
+            background-color: #3498db;
+        }
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+        button {
+            background-color: #e74c3c;
+        }
+        button:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div id="change-appointment-container">
+        <h1>Promena Termina</h1>
+        <form id="change-appointment-form">
+            <label for="appointment-id">Izaberite Termin:</label>
+            <select id="appointment-id" name="appointment_id" required>
+                <!-- Termini će biti dodati dinamički putem JavaScript-a -->
+            </select>
+            
+            <label for="new-date">Novi Datum:</label>
+            <input type="date" id="new-date" name="new_date" required>
+            
+            <label for="new-time">Novo Vreme:</label>
+            <input type="time" id="new-time" name="new_time" required>
+            
+            <label for="new-hairstyle">Nova Frizura:</label>
+            <select id="new-hairstyle" name="new_hairstyle" required>
+                <option value="sisanje">Šišanje</option>
+                <option value="feniranje">Feniranje</option>
+                <option value="farbanje">Farbanje</option>
+                <option value="sat">ŠAT</option>
+            </select>
+            
+            <label for="new-hair-length">Nova Dužina Kose:</label>
+            <select id="new-hair-length" name="new_hair_length" required>
+                <option value="kratka">Kratka</option>
+                <option value="srednja">Srednja</option>
+                <option value="duga">Duga</option>
+            </select>
+
+            <input type="submit" value="Promeni Termin">
+        </form>
+        <button id="delete-appointment-btn">Obriši Termin</button>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        // Funkcija za popunjavanje select polja sa terminima
+        function populateAppointments(appointments) {
+            const appointmentSelect = document.getElementById('appointment-id');
+            appointmentSelect.innerHTML = ''; // Očisti postojeće opcije
+            appointments.forEach(appointment => {
+                const option = document.createElement('option');
+                option.value = appointment.id;
+                option.textContent = `${appointment.date} u ${appointment.time} - ${appointment.hairstyle} (${appointment.hair_length})`;
+                appointmentSelect.appendChild(option);
+            });
+        }
+
+        // Dohvatanje i popunjavanje termina pri učitavanju stranice
+        fetch('/get_appointments')
+            .then(response => response.json())
+            .then(data => {
+                populateAppointments(data); // Pozivanje funkcije za popunjavanje
+            });
+
+        // Slanje zahteva za promenu termina
+        const form = document.getElementById('change-appointment-form');
+        const responseDiv = document.getElementById('response');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+
+            fetch('/promeni_termin', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                responseDiv.innerHTML = '<p>' + data.response + '</p>';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                responseDiv.innerHTML = '<p>Došlo je do greške. Molimo pokušajte ponovo.</p>';
+            });
+        });
+
+        // Slanje zahteva za brisanje termina
+        const deleteButton = document.getElementById('delete-appointment-btn');
+
+        deleteButton.addEventListener('click', function() {
+            const appointmentId = document.getElementById('appointment-id').value;
+
+            fetch('/obrisi_termin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `appointment_id=${appointmentId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                responseDiv.innerHTML = '<p>' + data.response + '</p>';
+                // Osveži listu termina nakon brisanja
+                fetch('/get_appointments')
+                    .then(response => response.json())
+                    .then(data => {
+                        populateAppointments(data);
+                    });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                responseDiv.innerHTML = '<p>Došlo je do greške prilikom brisanja termina. Molimo pokušajte ponovo.</p>';
+            });
+        });
+    </script>
+</body>
+</html>

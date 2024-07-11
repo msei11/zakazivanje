@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zakazani Termini</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        td {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <table id="appointments-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Datum</th>
+                <th>Vreme</th>
+                <th>Frizura</th>
+                <th>Dužina Kose</th>
+                <th>Cena</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Redovi tabele će biti dodati dinamički putem JavaScript-a -->
+        </tbody>
+    </table>
+
+    <script>
+        // Funkcija za popunjavanje tabele sa zakazivanjima
+        function populateTable(appointments) {
+            const tableBody = document.querySelector('#appointments-table tbody');
+            tableBody.innerHTML = '';
+
+            appointments.forEach(appointment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${appointment.id}</td>
+                    <td>${appointment.date}</td>
+                    <td>${appointment.time}</td>
+                    <td>${appointment.hairstyle}</td>
+                    <td>${appointment.hair_length}</td>
+                    <td>${appointment.price}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Dohvatanje i popunjavanje termina pri učitavanju stranice
+        fetch('/get_appointments')
+            .then(response => response.json())
+            .then(data => {
+                populateTable(data); // Pozivanje funkcije za popunjavanje
+            })
+            .catch(error => {
+                console.error('Greška prilikom dobijanja zakazivanja:', error);
+            });
+    </script>
+</body>
+</html>
