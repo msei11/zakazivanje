@@ -1,2 +1,0 @@
-# zakazivanje
-projekatzazakazivanje
