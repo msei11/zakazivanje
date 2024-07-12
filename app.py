@@ -53,7 +53,7 @@ def login_required(f):
 @app.route('/')
 @login_required
 def home():
-    return render_template('main.html')
+    return render_template('index.html')
 
 @app.route('/chat')
 @login_required
